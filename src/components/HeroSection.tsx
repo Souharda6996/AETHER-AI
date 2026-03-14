@@ -89,16 +89,15 @@ const HeroSection = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
-          <motion.div style={{ y: textY }} className="perspective-container">
+          <motion.div 
+            style={{ y: textY, rotateX: springY, rotateY: springX }} 
+            className="perspective-container"
+          >
             <motion.div {...textReveal}>
               <h1
-                className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-foreground"
-                style={{
-                  textShadow:
-                    "0 1px 0 hsl(222 47% 8%), 0 2px 0 hsl(222 47% 7%), 0 4px 8px rgba(0,0,0,0.4)",
-                }}
+                className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-foreground tracking-tighter"
               >
-                <span className="text-gradient">AETHER</span>
+                <span className="text-gradient drop-shadow-[0_0_35px_rgba(0,186,224,0.3)]">AETHER</span>
                 <br />
                 <span className="text-foreground">AI</span>
               </h1>

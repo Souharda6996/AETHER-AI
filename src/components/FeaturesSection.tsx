@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Brain, Zap, Shield, Globe, MessageSquare, BarChart3 } from "lucide-react";
 
 const features = [
@@ -34,20 +34,65 @@ const features = [
   },
 ];
 
-const cardVariants = {
-  initial: { opacity: 0, rotateX: 45, y: 60, scale: 0.9 },
-  whileInView: {
-    opacity: 1,
-    rotateX: 0,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", damping: 20, stiffness: 100 },
-  },
+const FeatureCard3D = ({ children, index }: { children: React.ReactNode; index: number }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-150, 150], [20, -20]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(x, [-150, 150], [-20, 20]), { stiffness: 300, damping: 30 });
+  const glareX = useTransform(x, [-150, 150], [0, 100]);
+  const glareY = useTransform(y, [-150, 150], [0, 100]);
+
+  const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set(e.clientX - rect.left - rect.width / 2);
+    y.set(e.clientY - rect.top - rect.height / 2);
+  };
+
+  const handleLeave = () => { x.set(0); y.set(0); };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, rotateX: 90, y: 100, z: -300, scale: 0.8 }}
+      whileInView={{ opacity: 1, rotateX: 0, y: 0, z: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ delay: index * 0.1, type: "spring", damping: 16, stiffness: 70 }}
+      style={{ perspective: 1500 }}
+    >
+      <motion.div
+        onMouseMove={handleMouse}
+        onMouseLeave={handleLeave}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="relative group h-full"
+        whileHover={{ z: 50 }}
+      >
+        {/* Intense dynamic glare effect */}
+        <motion.div
+          className="absolute inset-0 rounded-[24px] pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: useTransform(
+              [glareX, glareY],
+              ([gx, gy]) =>
+                `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.15) 0%, transparent 60%)`
+            ),
+          }}
+        />
+        {children}
+      </motion.div>
+    </motion.div>
+  );
 };
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-32 relative">
+    <section id="features" className="py-32 relative overflow-hidden">
+      {/* Background grid for this section */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "linear-gradient(hsl(191 91% 50%) 1px, transparent 1px), linear-gradient(90deg, hsl(191 91% 50%) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
+      />
+      
       <div className="container mx-auto px-6">
         <motion.div
           className="text-center mb-20 perspective-container"
@@ -66,35 +111,46 @@ const FeaturesSection = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              variants={cardVariants}
-              initial="initial"
-              whileInView="whileInView"
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: i * 0.1 }}
-              className="perspective-container"
-            >
+            <FeatureCard3D key={feature.title} index={i}>
               <motion.div
-                className="glass-card p-8 h-full group cursor-default"
-                whileHover={{ scale: 1.02, y: -4, transition: { duration: 0.2 } }}
+                className="glass-card p-8 h-full group cursor-default relative overflow-hidden border border-white/5"
+                whileHover={{ scale: 1.05, y: -10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
               >
-                <div className="glass-card-inner">
+                {/* Animated shimmer background on hover */}
+                <motion.div
+                  className="absolute inset-0 -z-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
+                  style={{
+                    background: "conic-gradient(from 0deg, transparent, hsl(191 91% 50%), transparent)",
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                />
+
+                <div className="relative z-10 transition-transform duration-300 group-hover:translate-z-20">
                   <motion.div
-                    className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-5"
-                    whileHover={{ rotate: 10 }}
+                    className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-6 shadow-lg transition-all duration-300 group-hover:bg-primary/10"
+                    whileHover={{ rotate: 12, scale: 1.15 }}
                   >
-                    <feature.icon className="h-6 w-6 text-primary" />
+                    <feature.icon className="h-7 w-7 text-primary transition-transform duration-300 group-hover:scale-110" />
                   </motion.div>
-                  <h3 className="font-display text-xl text-foreground mb-3">
+                  <h3 className="font-display text-2xl text-foreground mb-4 transition-colors duration-300 group-hover:text-primary">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed transition-colors duration-300 group-hover:text-foreground/80">
                     {feature.description}
                   </p>
                 </div>
+                
+                {/* Intense hover glow at the bottom */}
+                <motion.div
+                  className="absolute -inset-px rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                  style={{
+                    background: "radial-gradient(circle at 50% 100%, hsl(191 91% 50% / 0.12) 0%, transparent 70%)",
+                  }}
+                />
               </motion.div>
-            </motion.div>
+            </FeatureCard3D>
           ))}
         </div>
       </div>

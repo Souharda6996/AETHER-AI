@@ -14,10 +14,10 @@ const nodes = [
 const Card3D = ({ children, index }: { children: React.ReactNode; index: number }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y, [-100, 100], [12, -12]), { stiffness: 300, damping: 30 });
-  const rotateY = useSpring(useTransform(x, [-100, 100], [-12, 12]), { stiffness: 300, damping: 30 });
-  const glareX = useTransform(x, [-100, 100], [0, 100]);
-  const glareY = useTransform(y, [-100, 100], [0, 100]);
+  const rotateX = useSpring(useTransform(y, [-150, 150], [15, -15]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(x, [-150, 150], [-15, 15]), { stiffness: 300, damping: 30 });
+  const glareX = useTransform(x, [-150, 150], [0, 100]);
+  const glareY = useTransform(y, [-150, 150], [0, 100]);
 
   const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -32,26 +32,27 @@ const Card3D = ({ children, index }: { children: React.ReactNode; index: number 
 
   return (
     <motion.div
-      initial={{ opacity: 0, rotateX: 90, y: 80, z: -200 }}
-      whileInView={{ opacity: 1, rotateX: 0, y: 0, z: 0 }}
+      initial={{ opacity: 0, rotateX: 90, y: 100, z: -300, scale: 0.8 }}
+      whileInView={{ opacity: 1, rotateX: 0, y: 0, z: 0, scale: 1 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ delay: index * 0.12, type: "spring", damping: 18, stiffness: 80 }}
-      style={{ perspective: 800 }}
+      transition={{ delay: index * 0.15, type: "spring", damping: 16, stiffness: 70 }}
+      style={{ perspective: 1200 }}
     >
       <motion.div
         onMouseMove={handleMouse}
         onMouseLeave={handleLeave}
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="relative"
+        className="relative shadow-2xl group rounded-[20px]"
+        whileHover={{ z: 40 }}
       >
-        {/* Glare overlay */}
+        {/* Dynamic glare effect following mouse */}
         <motion.div
-          className="absolute inset-0 rounded-[20px] pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute inset-0 rounded-[20px] pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           style={{
             background: useTransform(
               [glareX, glareY],
               ([gx, gy]) =>
-                `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.06) 0%, transparent 60%)`
+                `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.08) 0%, transparent 60%)`
             ),
           }}
         />

@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Star } from "lucide-react";
 
 const reviews = [
@@ -35,6 +35,54 @@ const reviews = [
   },
 ];
 
+const ReviewCard3D = ({ children, index }: { children: React.ReactNode; index: number }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-150, 150], [20, -20]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(x, [-150, 150], [-20, 20]), { stiffness: 300, damping: 30 });
+  const glareX = useTransform(x, [-150, 150], [0, 100]);
+  const glareY = useTransform(y, [-150, 150], [0, 100]);
+
+  const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set(e.clientX - rect.left - rect.width / 2);
+    y.set(e.clientY - rect.top - rect.height / 2);
+  };
+
+  const handleLeave = () => { x.set(0); y.set(0); };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
+      whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1, type: "spring", damping: 20, stiffness: 100 }}
+      style={{ perspective: 1500 }}
+    >
+      <motion.div
+        onMouseMove={handleMouse}
+        onMouseLeave={handleLeave}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="relative group h-full"
+        whileHover={{ z: 50 }}
+      >
+        {/* Intensified dynamic glare effect */}
+        <motion.div
+          className="absolute inset-0 rounded-[20px] pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: useTransform(
+              [glareX, glareY],
+              ([gx, gy]) =>
+                `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.15) 0%, transparent 60%)`
+            ),
+          }}
+        />
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const ReviewsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -64,28 +112,36 @@ const ReviewsSection = () => {
 
       <motion.div style={{ x }} className="flex gap-6 pl-6">
         {reviews.map((review, i) => (
-          <motion.div
-            key={review.name}
-            className="glass-card p-8 min-w-[350px] max-w-[400px] shrink-0"
-            initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
-            whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1, type: "spring", damping: 20, stiffness: 100 }}
-            whileHover={{ scale: 1.03, y: -4 }}
-          >
-            <div className="flex gap-1 mb-4">
-              {Array.from({ length: review.rating }).map((_, j) => (
-                <Star key={j} className="h-4 w-4 fill-primary text-primary" />
-              ))}
-            </div>
-            <p className="text-foreground text-sm leading-relaxed mb-6">
-              "{review.text}"
-            </p>
-            <div>
-              <p className="font-display text-sm text-foreground">{review.name}</p>
-              <p className="text-xs text-muted-foreground">{review.role}</p>
-            </div>
-          </motion.div>
+          <ReviewCard3D key={review.name} index={i}>
+            <motion.div
+              className="glass-card p-8 min-w-[350px] max-w-[400px] h-full shrink-0 relative overflow-hidden"
+              whileHover={{ scale: 1.05, y: -10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <div className="relative z-10 transition-transform duration-300 group-hover:translate-z-20">
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: review.rating }).map((_, j) => (
+                    <Star key={j} className="h-4 w-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-foreground text-sm leading-relaxed mb-6 group-hover:text-foreground italic">
+                  "{review.text}"
+                </p>
+                <div>
+                  <p className="font-display text-base text-foreground group-hover:text-primary transition-colors">{review.name}</p>
+                  <p className="text-xs text-muted-foreground">{review.role}</p>
+                </div>
+              </div>
+
+              {/* Intense hover glow at the bottom */}
+              <motion.div
+                className="absolute -inset-px rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                style={{
+                  background: "radial-gradient(circle at 50% 100%, hsl(191 91% 50% / 0.12) 0%, transparent 70%)",
+                }}
+              />
+            </motion.div>
+          </ReviewCard3D>
         ))}
       </motion.div>
     </section>

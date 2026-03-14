@@ -50,23 +50,25 @@ const GlassNavbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", damping: 20, stiffness: 100 }}
-      className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl rounded-2xl transition-all duration-500 ${
+      className={`fixed top-4 inset-x-0 mx-auto z-50 w-[95%] max-w-5xl rounded-2xl transition-all duration-500 ${
         scrolled ? "glass" : "bg-transparent"
       }`}
     >
       <div className="flex items-center justify-between px-6 py-3">
-        <motion.a
-          href="#"
-          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-          className="flex items-center gap-2 text-foreground"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Zap className="h-6 w-6 text-primary" />
-          <span className="font-display text-xl">AETHER</span>
-        </motion.a>
+        <div className="flex flex-1 justify-start">
+          <motion.a
+            href="#"
+            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className="flex items-center gap-2 text-foreground"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Zap className="h-6 w-6 text-primary" />
+            <span className="font-display text-xl">AETHER</span>
+          </motion.a>
+        </div>
 
-        <div className="hidden md:flex items-center gap-1 relative">
+        <div className="hidden md:flex flex-none items-center gap-1 relative">
           {navLinks.map((link) => (
             <motion.button
               key={link.href}
@@ -87,23 +89,25 @@ const GlassNavbar = () => {
           ))}
         </div>
 
-        <div className="hidden md:block">
-          <motion.button
-            onClick={() => handleClick("#pricing")}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            Deploy Aether
-          </motion.button>
-        </div>
+        <div className="flex flex-1 justify-end">
+          <div className="hidden md:block">
+            <motion.button
+              onClick={() => handleClick("#pricing")}
+              className="whitespace-nowrap rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Deploy Aether
+            </motion.button>
+          </div>
 
-        <button
-          className="md:hidden text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+          <button
+            className="md:hidden text-foreground"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -126,7 +130,7 @@ const GlassNavbar = () => {
               ))}
               <button
                 onClick={() => handleClick("#pricing")}
-                className="mt-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+                className="whitespace-nowrap mt-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
               >
                 Deploy Aether
               </button>
