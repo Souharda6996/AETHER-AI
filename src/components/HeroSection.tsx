@@ -45,10 +45,25 @@ const HeroSection = () => {
     <section
       ref={ref}
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden mesh-gradient"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Animated background orbs */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-background/70" />
+        <div className="absolute inset-0 mesh-gradient opacity-60" />
+      </div>
+
+      {/* Animated glow orbs on top */}
+      <div className="absolute inset-0 overflow-hidden z-[1]">
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full opacity-20"
           style={{
