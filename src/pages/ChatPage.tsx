@@ -423,8 +423,8 @@ const ChatPage = () => {
                   }`}>
                     {msg.role === "assistant" ? <Bot className="h-5 w-5" /> : <User className="h-5 w-5" />}
                   </div>
-                  <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${msg.role === "assistant" ? "" : "items-end"}`}>
-                    <div className={`rounded-2xl px-5 py-3.5 text-sm leading-relaxed shadow-sm whitespace-pre-wrap word-break break-words custom-markdown ${
+                  <div className={`flex flex-col min-w-0 max-w-[85%] sm:max-w-[75%] ${msg.role === "assistant" ? "" : "items-end"}`}>
+                    <div className={`rounded-2xl px-5 py-3.5 text-sm leading-relaxed shadow-sm whitespace-pre-wrap word-break break-words overflow-x-auto custom-markdown ${
                       msg.role === "assistant"
                         ? "bg-[#0f0f1c] border border-[#1a1a2e] text-foreground/90 font-medium"
                         : "bg-primary text-primary-foreground font-semibold shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
@@ -478,7 +478,7 @@ const ChatPage = () => {
                 <div className="h-9 w-9 rounded-xl bg-primary/20 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-lg">
                   <Bot className="h-5 w-5" />
                 </div>
-                <div className="flex flex-col max-w-[85%] sm:max-w-[75%]">
+                <div className="flex flex-col min-w-0 max-w-[85%] sm:max-w-[75%]">
                   {currentAgent ? (
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0f0f1c] border border-primary/20 text-[11px] font-bold text-primary uppercase tracking-widest animate-pulse">
@@ -492,7 +492,7 @@ const ChatPage = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="rounded-2xl px-5 py-3.5 text-sm leading-relaxed shadow-sm whitespace-pre-wrap bg-[#0f0f1c] border border-[#1a1a2e] text-foreground/90 font-medium custom-markdown">
+                    <div className="rounded-2xl px-5 py-3.5 text-sm leading-relaxed shadow-sm whitespace-pre-wrap bg-[#0f0f1c] border border-[#1a1a2e] text-foreground/90 font-medium overflow-x-auto custom-markdown">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {streamingMessage}
                       </ReactMarkdown>
