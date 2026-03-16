@@ -131,13 +131,14 @@ const GlassNavbar = () => {
                   {link.label}
                 </motion.button>
               ))}
-              <motion.button
-                onClick={() => handleClick("#pricing")}
-                className="whitespace-nowrap mt-4 rounded-lg bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-lg"
-                whileTap={{ scale: 0.95 }}
-              >
-                Deploy Aether
-              </motion.button>
+              <Link to="/chat" onClick={() => setMobileOpen(false)}>
+                <motion.button
+                  className="whitespace-nowrap mt-2 w-full rounded-lg bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)]"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Launch Aether
+                </motion.button>
+              </Link>
             </div>
           </motion.div>
         )}

@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import mascot from "@/assets/mascot.png";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -120,18 +121,15 @@ const HeroSection = () => {
               transition={{ delay: 0.9, type: "spring", damping: 20 }}
               className="mt-8 flex flex-wrap gap-4"
             >
-              <motion.a
-                href="#pricing"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector("#pricing")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Deploy Aether <ArrowRight className="h-4 w-4" />
-              </motion.a>
+              <Link to="/chat">
+                <motion.button
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
+                  whileHover={{ scale: 1.05, y: -2, boxShadow: "0_0_25px_rgba(var(--primary-rgb),0.6)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Launch Aether <ArrowRight className="h-4 w-4" />
+                </motion.button>
+              </Link>
               <motion.a
                 href="#architecture"
                 onClick={(e) => {
