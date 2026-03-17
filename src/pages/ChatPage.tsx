@@ -38,6 +38,12 @@ if (!API_KEY || API_KEY === "[PASTE YOUR GROQ API KEY HERE]" || API_KEY === "[PA
   console.error("API KEY IS MISSING!");
 }
 
+const sanitizeContent = (content: string) => {
+  if (!content) return "";
+  // Replace <br>, <br/>, <br /> with \n
+  return content.replace(/<br\s*\/?>/gi, "\n");
+};
+
 const ChatPage = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
