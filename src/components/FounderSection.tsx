@@ -148,10 +148,6 @@ const FounderSection = () => {
                   src="/founder.jpeg"
                   alt="Souharda Mandal"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=400&q=80"; // fallback
-                  }}
                 />
               </div>
 
