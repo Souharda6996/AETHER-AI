@@ -58,7 +58,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const result = await signInWithEmailAndPassword(auth, email, pass);
+    // Send welcome email on email login too
+    if (result.user) {
+      console.log("📧 Triggering welcome email for email login:", result.user.email);
+      sendWelcomeEmail(
+        result.user.displayName || email.split("@")[0],
+        result.user.email || email
+      );
+    }
   };
 
   const signupWithEmail = async (email: string, pass: string) => {
