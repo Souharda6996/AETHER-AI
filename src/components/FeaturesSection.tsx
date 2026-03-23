@@ -89,7 +89,7 @@ const FeaturesSection = () => {
       {/* Background grid for this section */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
-          backgroundImage: "linear-gradient(hsl(191 91% 50%) 1px, transparent 1px), linear-gradient(90deg, hsl(191 91% 50%) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(#5A8F76 1px, transparent 1px), linear-gradient(90deg, #5A8F76 1px, transparent 1px)",
           backgroundSize: "80px 80px",
         }}
       />
@@ -102,10 +102,10 @@ const FeaturesSection = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", damping: 20, stiffness: 100 }}
         >
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-foreground">
+          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-[#EEE8B2]">
             Built for <span className="text-gradient">Scale</span>
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-[#5A8F76] max-w-2xl mx-auto">
             Every component engineered for enterprise-grade performance. No compromises.
           </p>
         </motion.div>
@@ -122,7 +122,7 @@ const FeaturesSection = () => {
                 <motion.div
                   className="absolute inset-0 -z-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
                   style={{
-                    background: "conic-gradient(from 0deg, transparent, hsl(191 91% 50%), transparent)",
+                    background: "conic-gradient(from 0deg, transparent, #C18D52, transparent)",
                   }}
                   animate={{ rotate: 360 }}
                   transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
@@ -130,15 +130,15 @@ const FeaturesSection = () => {
 
                 <div className="relative z-10 transition-transform duration-300 group-hover:translate-z-20">
                   <motion.div
-                    className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-6 shadow-lg transition-all duration-300 group-hover:bg-primary/10"
+                    className="w-14 h-14 rounded-2xl bg-[#203B37] flex items-center justify-center mb-6 shadow-lg transition-all duration-300 group-hover:bg-[#C18D52]/10"
                     whileHover={{ rotate: 12, scale: 1.15 }}
                   >
-                    <feature.icon className="h-7 w-7 text-primary transition-transform duration-300 group-hover:scale-110" />
+                  <feature.icon className="h-7 w-7 text-[#C18D52] transition-transform duration-300 group-hover:scale-110" />
                   </motion.div>
-                  <h3 className="font-display text-2xl text-foreground mb-4 transition-colors duration-300 group-hover:text-primary">
+                  <h3 className="font-display text-2xl text-[#EEE8B2] mb-4 transition-colors duration-300 group-hover:text-[#C18D52]">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed transition-colors duration-300 group-hover:text-foreground/80">
+                  <p className="text-[#C8C8D8] text-sm leading-relaxed transition-colors duration-300 group-hover:text-[#E8E0F0]/80">
                     {feature.description}
                   </p>
                 </div>
@@ -147,7 +147,7 @@ const FeaturesSection = () => {
                 <motion.div
                   className="absolute -inset-px rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
                   style={{
-                    background: "radial-gradient(circle at 50% 100%, hsl(191 91% 50% / 0.12) 0%, transparent 70%)",
+                    background: "radial-gradient(circle at 50% 100%, #5A8F76 0%, transparent 70%)",
                   }}
                 />
               </motion.div>

@@ -6,67 +6,81 @@
 
 @layer base {
   :root {
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
+    /* Exact Emerald/Gold Color Palette */
+    --color-cream: #EEE8B2;
+    --color-gold: #C18D52;
+    --color-void: #081B1B;
+    --color-forest: #203B37;
+    --color-sage: #5A8F76;
+    --color-mint: #96CDB0;
 
-    --card: 222 47% 7%;
-    --card-foreground: 210 40% 98%;
+    --background: 180 54% 7%; /* #081B1B translated to HSL */
+    --foreground: 54 55% 82%; /* #EEE8B2 soft cream */
 
-    --popover: 222 47% 7%;
-    --popover-foreground: 210 40% 98%;
+    --card: 174 30% 18%; /* #203B37 */
+    --card-foreground: 54 55% 82%;
 
-    --primary: 191 91% 50%;
-    --primary-foreground: 222 47% 4%;
+    --popover: 174 30% 18%;
+    --popover-foreground: 54 55% 82%;
 
-    --secondary: 222 30% 14%;
-    --secondary-foreground: 210 40% 98%;
+    --primary: 33 48% 54%; /* #C18D52 gold */
+    --primary-foreground: 180 54% 7%;
 
-    --muted: 222 30% 12%;
-    --muted-foreground: 215 20% 55%;
+    --secondary: 153 23% 46%; /* #5A8F76 Sage */
+    --secondary-foreground: 54 55% 82%;
 
-    --accent: 263 70% 50%;
-    --accent-foreground: 210 40% 98%;
+    --muted: 153 23% 46%;
+    --muted-foreground: 150 37% 75%; /* #96CDB0 Mint */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 33 48% 54%; /* gold */
+    --accent-foreground: 180 54% 7%;
 
-    --border: 220 20% 15%;
-    --input: 220 20% 15%;
-    --ring: 191 91% 50%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 153 23% 46%;
+    --input: 153 23% 46%;
+    --ring: 33 48% 54%;
 
     --radius: 0.75rem;
 
-    --glass: rgba(15, 23, 42, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-highlight: rgba(255, 255, 255, 0.05);
+    --glass: rgba(32, 59, 55, 0.75);
+    --glass-border: rgba(193, 141, 82, 0.2);
+    --glass-highlight: rgba(193, 141, 82, 0.05);
 
-    --gradient-primary: linear-gradient(135deg, hsl(191 91% 50%), hsl(263 70% 50%));
-    --gradient-bg: radial-gradient(ellipse at 20% 50%, hsl(263 70% 15% / 0.4) 0%, transparent 50%),
-                   radial-gradient(ellipse at 80% 20%, hsl(191 91% 15% / 0.3) 0%, transparent 50%),
-                   radial-gradient(ellipse at 50% 80%, hsl(222 47% 4%) 0%, hsl(222 47% 4%) 100%);
+    --gradient-hero: linear-gradient(160deg, #081B1B 0%, #203B37 40%, #5A8F76 80%, #96CDB0 100%);
+    --gradient-sidebar: linear-gradient(180deg, #203B37 0%, #081B1B 100%);
+    --gradient-card: linear-gradient(135deg, #203B37 0%, #5A8F76 100%);
+    --gradient-primary: linear-gradient(135deg, #C18D52 0%, #EEE8B2 100%);
+    --gradient-glow: linear-gradient(135deg, #C18D52, #5A8F76, #081B1B);
+    --gradient-footer: linear-gradient(180deg, #081B1B, #203B37);
 
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.3);
-    --shadow-glow-primary: 0 0 40px hsl(191 91% 50% / 0.15);
-    --shadow-glow-accent: 0 0 40px hsl(263 70% 50% / 0.15);
+    --shadow-card: 0 4px 24px rgba(8, 27, 27, 0.2);
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
+  *, *::before, *::after {
     box-sizing: border-box;
   }
 
   html {
-    scroll-behavior: smooth;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
-    overflow-x: hidden;
-    max-width: 100vw;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  #root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 }
 
@@ -97,6 +111,10 @@
     background-clip: text;
   }
 
+  .text-glow-gold {
+    text-shadow: 0 0 20px rgba(193, 141, 82, 0.4);
+  }
+
   .gradient-border {
     position: relative;
   }
@@ -106,7 +124,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 1px;
+    padding: 1.5px;
     background: var(--gradient-primary);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -125,7 +143,15 @@
   }
 
   .mesh-gradient {
-    background: var(--gradient-bg);
+    background: var(--gradient-hero);
+  }
+
+  .sidebar-gradient {
+    background: var(--gradient-sidebar);
+  }
+
+  .footer-gradient {
+    background: var(--gradient-footer);
   }
 
   @keyframes mesh-move {
@@ -141,8 +167,8 @@
   }
 
   @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px hsl(191 91% 50% / 0.2); }
-    50% { box-shadow: 0 0 40px hsl(191 91% 50% / 0.4), 0 0 80px hsl(263 70% 50% / 0.2); }
+    0%, 100% { box-shadow: 0 0 20px rgba(193, 141, 82, 0.2); }
+    50% { box-shadow: 0 0 40px rgba(193, 141, 82, 0.4), 0 0 80px rgba(90, 143, 118, 0.2); }
   }
 
   @keyframes gradient-rotate {
@@ -162,7 +188,76 @@
     animation: gradient-rotate 8s linear infinite;
   }
 
-  .perspective-container {
-    perspective: 1000px;
+  /* Target the messages scroll div specifically */
+  .messages-scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(193, 141, 82, 0.5) transparent;
+  }
+
+  .messages-scroll-area::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .messages-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .messages-scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(193, 141, 82, 0.4);
+    border-radius: 999px;
+    transition: background 0.2s;
+  }
+
+  .messages-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #C18D52;
+  }
+
+  /* Bot message bubble */
+  .bot-bubble {
+    max-width: 70% !important;
+    min-width: 0px !important;
+    width: fit-content !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+    overflow: hidden !important;
+    background: #FFFFFF !important;
+    color: #081B1B !important;
+    padding: 12px 16px !important;
+    border-radius: 4px 18px 18px 18px !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    border: 1px solid rgba(90, 143, 118, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(8, 27, 27, 0.08) !important;
+  }
+
+  /* User message bubble */
+  .user-bubble {
+    max-width: 70% !important;
+    min-width: 0px !important;
+    width: fit-content !important;
+    margin-left: auto !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+    background: linear-gradient(135deg, #C18D52, #D4A96A) !important;
+    color: #081B1B !important;
+    padding: 10px 16px !important;
+    border-radius: 18px 4px 18px 18px !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    font-weight: 500 !important;
+  }
+
+  /* Action 4: Code block overflow fix */
+  pre, code {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-x: auto;
+    max-width: 100%;
+    font-size: 0.85rem;
+    background: rgba(8, 27, 27, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
   }
 }

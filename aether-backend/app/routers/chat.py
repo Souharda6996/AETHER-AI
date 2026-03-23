@@ -76,6 +76,9 @@ async def event_generator(request: ChatRequest, user: User) -> AsyncGenerator[st
         is_complete=False
     )
 
+
+
+
     # 3. Stream Graph Events
     async for event in graph.astream(initial_state, stream_mode="updates"):
         for node_name, updates in event.items():
@@ -86,7 +89,15 @@ async def event_generator(request: ChatRequest, user: User) -> AsyncGenerator[st
             if "messages" in updates:
                 last_msg = updates["messages"][-1]
                 if hasattr(last_msg, "content"):
-                    yield f"data: {json.dumps({'type': 'token', 'text': last_msg.content})}\n\n"
+                    content = last_msg.content
+                    if isinstance(content, list):
+                        # Handle Anthropic/Vertex list-based content blocks
+                        text = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
+                    else:
+                        text = str(content)
+                    
+                    if text:
+                        yield f"data: {json.dumps({'type': 'token', 'text': text})}\n\n"
             
             if "tool_results" in updates:
                 for res in updates["tool_results"]:
@@ -96,6 +107,8 @@ async def event_generator(request: ChatRequest, user: User) -> AsyncGenerator[st
                 yield f"data: {json.dumps({'type': 'memory_hit', 'count': len(updates['memory_context'])})}\n\n"
 
             yield f"data: {json.dumps({'type': 'agent_end', 'agent': node_name, 'duration_ms': 0})}\n\n"
+
+
 
     # 4. Done Event
     total_latency = int((asyncio.get_event_loop().time() - start_time) * 1000)

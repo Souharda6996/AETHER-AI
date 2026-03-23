@@ -57,15 +57,15 @@ const GlassNavbar = () => {
     >
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex flex-1 justify-start">
-          <motion.a
+            <motion.a
             href="#"
             onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            className="flex items-center gap-2 text-foreground"
+            className="flex items-center gap-2 text-[#C8C8D8]"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Zap className="h-6 w-6 text-primary" />
-            <span className="font-display text-xl">AETHER</span>
+            <Zap className="h-6 w-6 text-[#C18D52]" />
+            <span className="font-display text-xl text-[#C18D52]">AETHER</span>
           </motion.a>
         </div>
 
@@ -74,14 +74,14 @@ const GlassNavbar = () => {
             <motion.button
               key={link.href}
               onClick={() => handleClick(link.href)}
-              className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="relative px-4 py-2 text-sm font-medium text-[#5A8F76] transition-colors hover:text-[#C18D52]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               {activeLink === link.href && (
                 <motion.div
                   layoutId="activeNavPill"
-                  className="absolute inset-0 rounded-lg bg-secondary"
+                  className="absolute inset-0 rounded-lg bg-[#203B37]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
@@ -94,8 +94,8 @@ const GlassNavbar = () => {
           <div className="hidden md:block">
             <Link to="/chat">
               <motion.button
-                className="whitespace-nowrap rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
-                whileHover={{ scale: 1.05, y: -2, boxShadow: "0_0_25px_rgba(var(--primary-rgb),0.6)" }}
+                className="whitespace-nowrap rounded-lg bg-gradient-to-br from-[#C18D52] to-[#EEE8B2] px-5 py-2 text-sm font-semibold text-[#081B1B] shadow-[0_0_15px_rgba(193,141,82,0.3)]"
+                whileHover={{ scale: 1.05, y: -2, boxShadow: "0_0_25px_rgba(193,141,82,0.4)" }}
                 whileTap={{ scale: 0.95 }}
               >
                 Launch Aether
@@ -104,7 +104,7 @@ const GlassNavbar = () => {
           </div>
 
           <button
-            className="md:hidden text-foreground"
+            className="md:hidden text-[#C8C8D8]"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -120,20 +120,20 @@ const GlassNavbar = () => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden md:hidden"
           >
-            <div className="flex flex-col gap-2 px-6 pb-6 pt-2 glass m-2 rounded-xl border border-white/5 shadow-2xl">
+            <div className="flex flex-col gap-2 px-6 pb-6 pt-2 bg-[#203B37]/95 backdrop-blur-xl m-2 rounded-xl border border-[#5A8F76]/30 shadow-2xl">
               {navLinks.map((link) => (
                 <motion.button
                   key={link.href}
                   onClick={() => handleClick(link.href)}
-                  className="text-left py-3 text-base font-medium text-muted-foreground hover:text-foreground transition-colors border-b border-white/5 last:border-0"
-                  whileTap={{ x: 5, color: "var(--primary)" }}
+                  className="text-left py-3 text-base font-medium text-[#7A8BAA] hover:text-[#FFA586] transition-colors border-b border-[#384358] last:border-0"
+                  whileTap={{ x: 5, color: "#FFA586" }}
                 >
                   {link.label}
                 </motion.button>
               ))}
               <Link to="/chat" onClick={() => setMobileOpen(false)}>
                 <motion.button
-                  className="whitespace-nowrap mt-2 w-full rounded-lg bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)]"
+                  className="whitespace-nowrap mt-2 w-full rounded-lg bg-gradient-to-br from-[#C18D52] to-[#EEE8B2] px-5 py-3 text-base font-semibold text-[#081B1B] shadow-[0_0_15px_rgba(193,141,82,0.4)]"
                   whileTap={{ scale: 0.95 }}
                 >
                   Launch Aether

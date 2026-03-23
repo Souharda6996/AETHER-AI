@@ -102,10 +102,10 @@ const ReviewsSection = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ type: "spring", damping: 20, stiffness: 100 }}
         >
-          <p className="text-primary font-mono-custom text-sm mb-4 tracking-wider uppercase">
+          <p className="text-[#C18D52] font-mono-custom text-sm mb-4 tracking-wider uppercase">
             Testimonials
           </p>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-foreground">
+          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-[#EEE8B2]">
             Trusted by <span className="text-gradient">Leaders</span>
           </h2>
         </motion.div>
@@ -122,23 +122,22 @@ const ReviewsSection = () => {
               <div className="relative z-10 transition-transform duration-300 group-hover:translate-z-20">
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: review.rating }).map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-primary text-primary" />
+                    <Star key={j} className="h-4 w-4 fill-[#C18D52] text-[#C18D52]" />
                   ))}
                 </div>
-                <p className="text-foreground text-sm leading-relaxed mb-6 group-hover:text-foreground italic">
+                <p className="text-[#EEE8B2]/70 text-sm leading-relaxed mb-6 group-hover:text-[#EEE8B2] italic">
                   "{review.text}"
                 </p>
                 <div>
-                  <p className="font-display text-base text-foreground group-hover:text-primary transition-colors">{review.name}</p>
-                  <p className="text-xs text-muted-foreground">{review.role}</p>
+                  <p className="font-display text-base text-[#EEE8B2] group-hover:text-[#C18D52] transition-colors">{review.name}</p>
+                  <p className="text-xs text-[#5A8F76]">{review.role}</p>
                 </div>
               </div>
 
-              {/* Intense hover glow at the bottom */}
               <motion.div
                 className="absolute -inset-px rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
                 style={{
-                  background: "radial-gradient(circle at 50% 100%, hsl(191 91% 50% / 0.12) 0%, transparent 70%)",
+                  background: "radial-gradient(circle at 50% 100%, #5A8F7622 0%, transparent 70%)",
                 }}
               />
             </motion.div>

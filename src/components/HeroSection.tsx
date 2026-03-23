@@ -60,7 +60,7 @@ const HeroSection = () => {
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/70" />
+        <div className="absolute inset-0 bg-[#081B1B]/70" />
         <div className="absolute inset-0 mesh-gradient opacity-60" />
       </div>
 
@@ -69,7 +69,7 @@ const HeroSection = () => {
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full opacity-20"
           style={{
-            background: "radial-gradient(circle, hsl(191 91% 50% / 0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, #5A8F76 0%, transparent 70%)",
             top: "10%",
             left: "10%",
           }}
@@ -79,7 +79,7 @@ const HeroSection = () => {
         <motion.div
           className="absolute w-[500px] h-[500px] rounded-full opacity-15"
           style={{
-            background: "radial-gradient(circle, hsl(263 70% 50% / 0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, #C18D52 0%, transparent 70%)",
             bottom: "10%",
             right: "10%",
           }}
@@ -97,17 +97,17 @@ const HeroSection = () => {
           >
             <motion.div {...textReveal}>
               <h1
-                className="font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-foreground tracking-tighter"
+                className="font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-[#E8E0F0] tracking-tighter"
               >
-                <span className="text-gradient drop-shadow-[0_0_35px_rgba(0,186,224,0.3)]">AETHER</span>
+                <span className="text-gradient drop-shadow-[0_0_35px_rgba(193,141,82,0.3)]">AETHER</span>
                 <br />
-                <span className="text-foreground">AI</span>
+                <span className="text-[#EEE8B2]">AI</span>
               </h1>
             </motion.div>
 
             <motion.p
               {...subReveal}
-              className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-lg"
+              className="mt-6 text-lg sm:text-xl text-[#EEE8B2]/80 max-w-lg"
               style={{ lineHeight: 1.6, textWrap: "pretty" as any }}
             >
               Intelligence, Dimensionally Rendered. The first autonomous AI agent
@@ -123,8 +123,8 @@ const HeroSection = () => {
             >
               <Link to="/chat">
                 <motion.button
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
-                  whileHover={{ scale: 1.05, y: -2, boxShadow: "0_0_25px_rgba(var(--primary-rgb),0.6)" }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#C18D52] to-[#EEE8B2] px-6 py-3 text-sm font-semibold text-[#081B1B] shadow-[0_0_15px_rgba(193,141,82,0.5)]"
+                  whileHover={{ scale: 1.05, y: -2, boxShadow: "0_0_25px_rgba(193,141,82,0.6)" }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Launch Aether <ArrowRight className="h-4 w-4" />
@@ -136,7 +136,7 @@ const HeroSection = () => {
                   e.preventDefault();
                   document.querySelector("#architecture")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="inline-flex items-center gap-2 rounded-lg border border-muted px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#5A8F76]/40 px-6 py-3 text-sm font-medium text-[#EEE8B2]/70 hover:bg-[#5A8F76]/20 transition-colors"
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -148,12 +148,12 @@ const HeroSection = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
-              className="mt-8 flex items-center gap-6 text-sm text-muted-foreground"
+              className="mt-8 flex items-center gap-6 text-sm text-[#7A8BAA]"
             >
               <span className="font-mono-custom">47ms latency</span>
-              <span className="w-1 h-1 rounded-full bg-primary" />
+              <span className="w-1 h-1 rounded-full bg-[#C18D52]" />
               <span className="font-mono-custom">99.99% uptime</span>
-              <span className="w-1 h-1 rounded-full bg-primary" />
+              <span className="w-1 h-1 rounded-full bg-[#C18D52]" />
               <span className="font-mono-custom">SOC2</span>
             </motion.div>
           </motion.div>
@@ -166,7 +166,7 @@ const HeroSection = () => {
             <motion.div
               className="absolute w-80 h-80 rounded-full animate-pulse-glow"
               style={{
-                background: "radial-gradient(circle, hsl(191 91% 50% / 0.1) 0%, transparent 70%)",
+                background: "radial-gradient(circle, #5A8F76 0%, transparent 70%)",
               }}
             />
             <motion.img
@@ -188,8 +188,8 @@ const HeroSection = () => {
         transition={{ duration: 2, repeat: Infinity }}
       >
         <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-2">
-          <motion.div
-            className="w-1.5 h-1.5 rounded-full bg-primary"
+            <motion.div
+            className="w-1.5 h-1.5 rounded-full bg-[#C18D52]"
             animate={{ y: [0, 16, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           />

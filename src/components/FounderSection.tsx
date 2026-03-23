@@ -55,7 +55,7 @@ const FounderCard3D = ({ children, highlighted }: { children: React.ReactNode; h
           <motion.div
             className="absolute -inset-4 rounded-[32px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             style={{
-              background: "radial-gradient(circle, hsl(263 70% 50% / 0.15) 0%, transparent 70%)",
+              background: "radial-gradient(circle, #5A8F76 0%, transparent 70%)",
               filter: "blur(25px)",
             }}
           />
@@ -72,7 +72,7 @@ const FounderSection = () => {
       {/* Background grid lines */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
-          backgroundImage: "linear-gradient(hsl(191 91% 50%) 1px, transparent 1px), linear-gradient(90deg, hsl(191 91% 50%) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(#5A8F76 1px, transparent 1px), linear-gradient(90deg, #5A8F76 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
@@ -80,7 +80,7 @@ const FounderSection = () => {
       <div className="container mx-auto px-6">
         <motion.div className="text-center mb-16" style={{ perspective: 1000 }}>
           <motion.p
-            className="text-primary font-mono-custom text-sm mb-4 tracking-wider uppercase"
+            className="text-[#C18D52] font-mono-custom text-sm mb-4 tracking-wider uppercase"
             initial={{ opacity: 0, y: 20, rotateX: 40 }}
             whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -89,7 +89,7 @@ const FounderSection = () => {
             Meet the Founder
           </motion.p>
           <motion.h2
-            className="font-display text-4xl sm:text-5xl lg:text-6xl text-foreground"
+            className="font-display text-4xl sm:text-5xl lg:text-6xl text-[#EEE8B2]"
             initial={{ opacity: 0, rotateX: 80, y: 80, scale: 0.7 }}
             whileInView={{ opacity: 1, rotateX: 0, y: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -98,7 +98,7 @@ const FounderSection = () => {
             Visionary <span className="text-gradient">Leadership</span>
           </motion.h2>
           <motion.p
-            className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto"
+            className="mt-4 text-lg text-[#5A8F76] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -119,7 +119,7 @@ const FounderSection = () => {
               <motion.div
                 className="absolute inset-0 -z-0 opacity-10"
                 style={{
-                  background: "conic-gradient(from 0deg, transparent, hsl(263 70% 50%), hsl(191 91% 50%), transparent)",
+                  background: "conic-gradient(from 0deg, transparent, #5A8F76, #C18D52, transparent)",
                 }}
                 animate={{ rotate: 360 }}
                 transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
@@ -129,12 +129,12 @@ const FounderSection = () => {
               <motion.div
                 className="absolute -inset-px rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
                 style={{
-                  background: `radial-gradient(circle at 50% 100%, hsl(263 70% 50% / 0.15) 0%, transparent 60%)`,
+                  background: `radial-gradient(circle at 50% 100%, #5A8F7622 0%, transparent 60%)`,
                 }}
               />
 
               <motion.div
-                className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 whitespace-nowrap"
+                className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#C18D52] to-[#EEE8B2] text-[#081B1B] text-xs font-semibold flex items-center gap-1 whitespace-nowrap"
                 initial={{ y: -20, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
@@ -143,7 +143,7 @@ const FounderSection = () => {
                 <Sparkles className="h-3 w-3" /> AETHER-Ai Creator
               </motion.div>
 
-              <div className="w-56 h-56 md:w-72 md:h-72 shrink-0 relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:border-primary/50 transition-colors duration-500">
+              <div className="w-56 h-56 md:w-72 md:h-72 shrink-0 relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-[#5A8F76]/30 group-hover:border-[#C18D52]/50 transition-colors duration-500">
                 <img
                   src="/founder.jpeg"
                   alt="Souharda Mandal"
@@ -152,22 +152,22 @@ const FounderSection = () => {
               </div>
 
               <div className="relative z-10 text-center md:text-left flex-1">
-                <h3 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground mb-2">Souharda Mandal</h3>
-                <p className="text-primary font-mono-custom text-sm md:text-md tracking-wide mb-6">AI Engineer & B.Tech CSE (AI & ML)</p>
+                <h3 className="font-display text-3xl md:text-4xl lg:text-5xl text-[#EEE8B2] mb-2">Souharda Mandal</h3>
+                <p className="text-[#C18D52] font-mono-custom text-sm md:text-md tracking-wide mb-6">AI Engineer & B.Tech CSE (AI & ML)</p>
 
-                <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-8">
+                <p className="text-[#D4C5B8] text-sm md:text-base leading-relaxed mb-8">
                   An innovator at the intersection of Agentic RAG and high-performance software, I developed AETHER-Ai to bridge the gap between complex AI architecture and seamless user experience, my mission is to build intelligent systems that are as reliable as they are revolutionary.
                 </p>
 
                 <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/50 border border-white/5 text-sm font-medium text-foreground">
-                    <Brain className="h-4 w-4 text-primary" /> Deep Learning
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#242F48]/50 border border-[#384358] text-sm font-medium text-[#C8C8D8]">
+                    <Brain className="h-4 w-4 text-[#C18D52]" /> Deep Learning
                   </div>
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/50 border border-white/5 text-sm font-medium text-foreground">
-                    <Code className="h-4 w-4 text-primary" /> Full-Stack Dev
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#203B37]/50 border border-[#5A8F76]/30 text-sm font-medium text-[#EEE8B2]/70">
+                    <Code className="h-4 w-4 text-[#C18D52]" /> Full-Stack Dev
                   </div>
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/50 border border-white/5 text-sm font-medium text-foreground">
-                    <Terminal className="h-4 w-4 text-primary" /> Prompt Engineering
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#203B37]/50 border border-[#5A8F76]/30 text-sm font-medium text-[#EEE8B2]/70">
+                    <Terminal className="h-4 w-4 text-[#C18D52]" /> Prompt Engineering
                   </div>
                 </div>
               </div>

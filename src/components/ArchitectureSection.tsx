@@ -3,12 +3,12 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Database, Cpu, Cloud, Lock, Workflow, Globe } from "lucide-react";
 
 const nodes = [
-  { id: "input", label: "Input Layer", icon: Globe, description: "Multi-channel ingestion: REST, WebSocket, gRPC", connections: ["llm"], color: "191 91% 50%" },
-  { id: "llm", label: "LLM Core", icon: Cpu, description: "Transformer-based reasoning with 128K context window", connections: ["memory", "tools"], color: "263 70% 50%" },
-  { id: "memory", label: "Memory Store", icon: Database, description: "Vector DB with semantic search & conversation history", connections: ["output"], color: "191 91% 50%" },
-  { id: "tools", label: "Tool Orchestrator", icon: Workflow, description: "Autonomous tool selection & execution pipeline", connections: ["security"], color: "263 70% 50%" },
-  { id: "security", label: "Security Mesh", icon: Lock, description: "Zero-trust validation on every inference step", connections: ["output"], color: "191 91% 50%" },
-  { id: "output", label: "Edge Delivery", icon: Cloud, description: "Global CDN with 47ms P95 latency", color: "263 70% 50%" },
+  { id: "input", label: "Input Layer", icon: Globe, description: "Multi-channel ingestion: REST, WebSocket, gRPC", connections: ["llm"], color: "#C18D52" },
+  { id: "llm", label: "LLM Core", icon: Cpu, description: "Transformer-based reasoning with 128K context window", connections: ["memory", "tools"], color: "#5A8F76" },
+  { id: "memory", label: "Memory Store", icon: Database, description: "Vector DB with semantic search & conversation history", connections: ["output"], color: "#C18D52" },
+  { id: "tools", label: "Tool Orchestrator", icon: Workflow, description: "Autonomous tool selection & execution pipeline", connections: ["security"], color: "#5A8F76" },
+  { id: "security", label: "Security Mesh", icon: Lock, description: "Zero-trust validation on every inference step", connections: ["output"], color: "#C18D52" },
+  { id: "output", label: "Edge Delivery", icon: Cloud, description: "Global CDN with 47ms P95 latency", color: "#5A8F76" },
 ];
 
 const Card3D = ({ children, index }: { children: React.ReactNode; index: number }) => {
@@ -84,7 +84,7 @@ const ArchitectureSection = () => {
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 rounded-full bg-primary/30"
+            className="absolute w-1 h-1 rounded-full bg-[#C18D52]/30"
             style={{
               left: `${15 + i * 15}%`,
               top: `${20 + (i % 3) * 25}%`,
@@ -106,7 +106,7 @@ const ArchitectureSection = () => {
           style={{ perspective: 1000 }}
         >
           <motion.p
-            className="text-primary font-mono-custom text-sm mb-4 tracking-wider uppercase"
+            className="text-[#C18D52] font-mono-custom text-sm mb-4 tracking-wider uppercase"
             initial={{ opacity: 0, y: 30, rotateX: 40 }}
             whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -115,7 +115,7 @@ const ArchitectureSection = () => {
             System Architecture
           </motion.p>
           <motion.h2
-            className="font-display text-4xl sm:text-5xl lg:text-6xl text-foreground"
+            className="font-display text-4xl sm:text-5xl lg:text-6xl text-[#EEE8B2]"
             initial={{ opacity: 0, rotateX: 80, y: 80, scale: 0.7 }}
             whileInView={{ opacity: 1, rotateX: 0, y: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -124,7 +124,7 @@ const ArchitectureSection = () => {
             The <span className="text-gradient">Neural Stack</span>
           </motion.h2>
           <motion.p
-            className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto"
+            className="mt-4 text-lg text-[#5A8F76] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -142,7 +142,7 @@ const ArchitectureSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 1.5, delay: 0.5 }}
           style={{ 
-            background: "linear-gradient(180deg, transparent, hsl(191 91% 50% / 0.15), hsl(263 70% 50% / 0.15), transparent)",
+            background: "linear-gradient(180deg, transparent, #5A8F7655, #C18D5255, transparent)",
             transformOrigin: "top"
           }}
         />
@@ -153,7 +153,7 @@ const ArchitectureSection = () => {
               <motion.div
                 className={`glass-card p-6 h-full cursor-pointer transition-all duration-500 group relative overflow-hidden ${
                   activeNode && !highlightedNodes.includes(node.id) ? "opacity-30 scale-[0.97]" : ""
-                } ${activeNode === node.id ? "ring-1 ring-primary/50" : ""}`}
+                } ${activeNode === node.id ? "ring-1 ring-[#C18D52]/50" : ""}`}
                 onMouseEnter={() => setActiveNode(node.id)}
                 onMouseLeave={() => setActiveNode(null)}
                 whileHover={{ scale: 1.04, y: -6 }}
@@ -163,14 +163,14 @@ const ArchitectureSection = () => {
                 <motion.div
                   className="absolute -inset-1 rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
                   style={{
-                    background: `radial-gradient(circle at 50% 50%, hsl(${node.color} / 0.08) 0%, transparent 70%)`,
+                    background: `radial-gradient(circle at 50% 50%, ${node.color}15 0%, transparent 70%)`,
                   }}
                 />
 
                 {/* Scanning line effect */}
                 <motion.div
                   className="absolute top-0 left-0 w-full h-px opacity-0 group-hover:opacity-100"
-                  style={{ background: `linear-gradient(90deg, transparent, hsl(${node.color} / 0.5), transparent)` }}
+                  style={{ background: `linear-gradient(90deg, transparent, ${node.color}, transparent)` }}
                   animate={{ y: [0, 200, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
@@ -179,8 +179,8 @@ const ArchitectureSection = () => {
                   <motion.div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500 ${
                       highlightedNodes.includes(node.id) && activeNode
-                        ? "bg-primary/20 shadow-[0_0_20px_hsl(191_91%_50%/0.2)]"
-                        : "bg-secondary"
+                        ? "bg-[#C18D52]/20 shadow-[0_0_20px_rgba(193,141,82,0.2)]"
+                        : "bg-[#203B37] border border-[#5A8F76]/30"
                     }`}
                     whileHover={{ rotate: 15, scale: 1.1 }}
                     transition={{ type: "spring", stiffness: 300 }}
@@ -188,14 +188,14 @@ const ArchitectureSection = () => {
                     <node.icon
                       className={`h-5 w-5 transition-colors duration-300 ${
                         highlightedNodes.includes(node.id) && activeNode
-                          ? "text-primary"
-                          : "text-muted-foreground"
+                          ? "text-[#C18D52]"
+                          : "text-[#5A8F76]"
                       }`}
                     />
                   </motion.div>
                   <div>
-                    <h3 className="font-display text-base text-foreground">{node.label}</h3>
-                    <p className="text-muted-foreground mt-1 font-mono-custom text-xs leading-relaxed">
+                    <h3 className="font-display text-base text-[#EEE8B2]">{node.label}</h3>
+                    <p className="text-[#C8C8D8] mt-1 font-mono-custom text-xs leading-relaxed">
                       {node.description}
                     </p>
                   </div>
@@ -207,8 +207,8 @@ const ArchitectureSection = () => {
                         key={c}
                         className={`text-xs font-mono-custom px-2 py-0.5 rounded transition-all duration-300 ${
                           activeNode === node.id
-                            ? "bg-primary/15 text-primary"
-                            : "bg-secondary text-muted-foreground"
+                            ? "bg-[#C18D52]/15 text-[#C18D52]"
+                            : "bg-[#203B37] border border-[#5A8F76]/30 text-[#96CDB0]"
                         }`}
                         initial={{ opacity: 0, x: -10 }}
                         whileInView={{ opacity: 1, x: 0 }}
