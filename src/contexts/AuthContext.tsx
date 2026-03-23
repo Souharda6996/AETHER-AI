@@ -5,9 +5,11 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signOut 
+  signOut,
+  getAdditionalUserInfo
 } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
+import { sendWelcomeEmail } from "../services/emailService";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -41,7 +43,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const loginWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
+    const result = await signInWithPopup(auth, googleProvider);
+    const additionalInfo = getAdditionalUserInfo(result);
+    console.log("🔐 Google login — isNewUser:", additionalInfo?.isNewUser, "email:", result.user?.email);
+
+    // Send welcome email on login
+    if (result.user) {
+      console.log("📧 Triggering welcome email for:", result.user.email);
+      sendWelcomeEmail(
+        result.user.displayName || "Explorer",
+        result.user.email || ""
+      );
+    }
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
@@ -49,7 +62,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signupWithEmail = async (email: string, pass: string) => {
-    await createUserWithEmailAndPassword(auth, email, pass);
+    const result = await createUserWithEmailAndPassword(auth, email, pass);
+
+    // Send welcome email for every new signup
+    if (result.user) {
+      sendWelcomeEmail(
+        result.user.displayName || email.split("@")[0],
+        result.user.email || email
+      );
+    }
   };
 
   const logout = async () => {
