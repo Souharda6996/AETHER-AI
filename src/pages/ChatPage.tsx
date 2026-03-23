@@ -14,8 +14,17 @@ import {
 import { 
   Send, Bot, User, Plus, MessageSquare, Settings, LogOut, 
   Share2, Zap, Command, ArrowLeft, Square, Copy, Check, 
-  ThumbsUp, ThumbsDown, RefreshCw, Menu, X, Pause, Play
+  ThumbsUp, ThumbsDown, RefreshCw, Menu, X, Pause, Play, Download, FileText, Image, FileCode, Paperclip, HardDrive, Camera, Code as CodeIcon, XCircle
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../components/ui/dropdown-menu";
+import { downloadAsText, downloadAsPDF, downloadAsImage } from "../utils/downloadUtils";
+import { extractTextFromFile, fileToBase64 } from "../utils/fileParser";
 
 interface Message {
   id: string;
@@ -30,6 +39,15 @@ interface Conversation {
   title: string;
   updatedAt: any;
   createdAt: any;
+}
+
+export interface UploadedFile {
+  id: string;
+  file: File;
+  previewUrl: string;
+  type: 'image' | 'document' | 'video' | 'code' | 'other';
+  status: 'pending' | 'uploading' | 'done' | 'error';
+  extractedText?: string;
 }
 
 const API_KEY = import.meta.env.VITE_API_KEY || "[PASTE YOUR KEY HERE]";
@@ -57,6 +75,7 @@ const ChatPage = () => {
     }
   ]);
   const [input, setInput] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<UploadedFile[]>([]);
   const [currentAgent, setCurrentAgent] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -73,6 +92,38 @@ const ChatPage = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files).map(file => {
+        let type: UploadedFile['type'] = 'other';
+        if (file.type.startsWith('image/')) type = 'image';
+        else if (file.type.startsWith('video/')) type = 'video';
+        else if (file.type.includes('pdf') || file.type.includes('document') || file.type.includes('text')) type = 'document';
+        else if (file.name.match(/\.(js|ts|py|html|css|json)$/)) type = 'code';
+
+        return {
+          id: crypto.randomUUID(),
+          file,
+          previewUrl: type === 'image' ? URL.createObjectURL(file) : '',
+          type,
+          status: 'pending' as const
+        };
+      });
+      setSelectedFiles(prev => [...prev, ...newFiles]);
+    }
+    // Reset input so the same file can be selected again if removed
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeFile = (id: string) => {
+    setSelectedFiles(prev => {
+      const file = prev.find(f => f.id === id);
+      if (file?.previewUrl) URL.revokeObjectURL(file.previewUrl);
+      return prev.filter(f => f.id !== id);
+    });
+  };
 
   // Auto-scroll to bottom whenever messages update
   useEffect(() => {
@@ -194,15 +245,17 @@ const ChatPage = () => {
   };
 
   const sendMessage = async (inputText: string) => {
-    const trimmed = inputText.trim()
-    if (!trimmed || isStreaming) return
+    const trimmed = inputText.trim();
+    if ((!trimmed && selectedFiles.length === 0) || isStreaming) return;
 
-    // 1. Add user message immediately
+    // We add to local state immediately for fast feedback (UI purposes)
+    const displayUserContent = trimmed + (selectedFiles.length > 0 ? `\n\n[Attached ${selectedFiles.length} file(s)]` : "");
+
     let convId = activeConversationId;
     
     if (!convId && currentUser) {
       const convRef = await addDoc(collection(db, "users", currentUser.uid, "conversations"), {
-        title: trimmed.slice(0, 40) + (trimmed.length > 40 ? "..." : ""),
+        title: (trimmed || "New Session").slice(0, 40) + ((trimmed || "New").length > 40 ? "..." : ""),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -217,36 +270,60 @@ const ChatPage = () => {
     const userMsg = {
       id:        crypto.randomUUID(),
       role:      'user' as const,
-      content:   trimmed,
+      content:   displayUserContent,
       timestamp: new Date().toISOString(),
+    };
+    
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsStreaming(true);
+    
+    // Process files
+    let combinedInputText = trimmed;
+    let base64Images: string[] = [];
+
+    if (selectedFiles.length > 0) {
+      setCurrentAgent("Processing Files...");
+      for (const fileObj of selectedFiles) {
+        try {
+          if (fileObj.type === "image") {
+            const b64 = await fileToBase64(fileObj.file);
+            base64Images.push(b64);
+          } else {
+            const extracted = await extractTextFromFile(fileObj.file);
+            combinedInputText += `\n\n--- Content of ${fileObj.file.name} ---\n${extracted}\n--- End of ${fileObj.file.name} ---\n`;
+          }
+        } catch (error) {
+           console.error(`Failed to parse ${fileObj.file.name}:`, error);
+           toast.error(`Could not read ${fileObj.file.name}`);
+        }
+      }
+      setSelectedFiles([]);
+      setCurrentAgent(null);
     }
-    
-    // We add to local state immediately for fast feedback
-    setMessages(prev => [...prev, userMsg])
-    
+
     if (currentUser && convId) {
       await addDoc(collection(db, "users", currentUser.uid, "conversations", convId, "messages"), {
         role: "user",
-        content: trimmed,
+        content: displayUserContent,
         timestamp: serverTimestamp()
       });
     }
 
-    setInput('')
-    setIsStreaming(true)
-
     try {
-      // 2. Use relative path for Vercel Serverless Functions
-      // When deployed, frontend and backend share the same base URL
-      const API_ENDPOINT = '/api/chat'
+      const API_ENDPOINT = '/api/chat';
 
-      // 3. Build full conversation history
-      const history = [...messages.filter(m => m.id !== "initial-1"), userMsg].map(m => ({
+      // We send the parsed text (combinedInputText) to the backend
+      const historyMsgForBackend = {
+        role: 'user',
+        content: combinedInputText
+      };
+
+      const history = [...messages.filter(m => m.id !== "initial-1"), historyMsgForBackend].map(m => ({
         role:    m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
-      }))
+      }));
 
-      // 4. Call the API
       const controller = new AbortController();
       setAbortController(controller);
 
@@ -255,61 +332,49 @@ const ChatPage = () => {
         headers: { 'Content-Type': 'application/json' },
         signal:  controller.signal,
         body:    JSON.stringify({ 
-          message:  trimmed,
-          messages: history 
+          message:  combinedInputText,
+          messages: history,
+          images: base64Images.length > 0 ? base64Images : undefined
         }),
-      })
+      });
 
-      // 5. Always parse as text first (catches non-JSON responses)
-      const rawText = await res.text()
+      const rawText = await res.text();
       
-      let data: any
+      let data: any;
       try {
-        data = JSON.parse(rawText)
+        data = JSON.parse(rawText);
       } catch {
-        console.error('Non-JSON response:', rawText.substring(0, 500))
-        throw new Error('Server returned an invalid response')
+        throw new Error('Server returned an invalid response');
       }
 
-      // 6. Handle HTTP errors with specific messages
       if (!res.ok) {
-        const errDetail = data?.error ?? `Server error ${res.status}`
-        console.error('API error response:', res.status, data)
-        throw new Error(errDetail)
+        throw new Error(data?.error ?? `Server error ${res.status}`);
       }
 
-      // 7. Extract reply — check all possible field names
       const reply: string = 
         data?.reply    ?? 
         data?.content  ?? 
         data?.message  ?? 
         data?.text     ?? 
         data?.response ?? 
-        ''
+        '';
 
       if (!reply.trim()) {
-        console.error('Empty reply from server. Data was:', data)
-        throw new Error('Received empty response from AI')
+        throw new Error('Received empty response from AI');
       }
 
-      // 8. Initiate Typewriter Pipeline
       setStreamingMessage(reply);
       setDisplayedStreamingMessage("");
-      // Note: isStreaming is already true, and will be set to false by the useEffect once typing is done.
-      
-      console.log('📡 AI response received, starting typewriter effect...')
 
     } catch (err: any) {
-      console.error('❌ sendMessage failed:', err?.message)
+      console.error('❌ sendMessage failed:', err?.message);
       
-      // Show SPECIFIC error message, not generic one
       const errorContent = err?.message?.includes('API key') 
-                   ? 'Configuration error: API key missing. Please check environment settings.'
+                   ? 'Configuration error: API key missing.'
                    : err?.message?.includes('rate limit')
                    ? 'Too many requests. Please wait a moment.'
-                   : err?.message?.includes('network') ||
-                     err?.message?.includes('fetch')
-                   ? 'Network error. Check your connection.'
+                   : err?.message?.includes('Payload Too Large')
+                   ? 'The uploaded files are too large for the system to process. Please try smaller files.'
                    : `Error: ${err?.message ?? 'Unknown error'}`;
 
       setMessages(prev => [...prev, {
@@ -317,10 +382,8 @@ const ChatPage = () => {
         role:      'assistant' as const,
         content:   errorContent,
         timestamp: new Date().toISOString(),
-      }])
-      setIsStreaming(false); // Reset on error
-    } finally {
-      // isStreaming is handled either by catch or by typewriter useEffect
+      }]);
+      setIsStreaming(false);
     }
   };
 
@@ -493,7 +556,7 @@ const ChatPage = () => {
                     {msg.role === "assistant" && (
                       <span className="mb-1 ml-1 text-[#5A8F76] text-[10px] font-bold uppercase tracking-widest">AETHER</span>
                     )}
-                    <div className={`max-w-full w-fit break-words overflow-wrap-anywhere whitespace-pre-wrap transition-all duration-300 ${
+                    <div id={`msg-${msg.id}`} className={`max-w-full w-fit break-words overflow-wrap-anywhere whitespace-pre-wrap transition-all duration-300 ${
                       msg.role === "assistant"
                         ? "overflow-hidden bg-white text-[#081B1B] text-[0.95rem] leading-relaxed px-4 py-3 rounded-[4px_18px_18px_18px] border border-[rgba(90,143,118,0.2)] shadow-sm"
                         : "bg-gradient-to-br from-[#C18D52] to-[#D4A96A] text-[#081B1B] font-medium text-[0.95rem] leading-relaxed px-4 py-2.5 rounded-[18px_4px_18px_18px]"
@@ -530,6 +593,40 @@ const ChatPage = () => {
                           <button onClick={() => handleFeedback(msg.id, "positive")} className={`p-1.5 rounded hover:bg-[#EEE8B2]/50 transition-all duration-200 ${msg.feedback === "positive" ? "text-[#C18D52]" : "text-[#5A8F76]"}`}>
                             <ThumbsUp className={`h-3.5 w-3.5 hover:text-[#C18D52] ${msg.feedback === "positive" ? "fill-[#C18D52]" : ""}`} />
                           </button>
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="p-1.5 rounded hover:bg-[#EEE8B2]/50 text-[#5A8F76] transition-all duration-200">
+                                <Download className="h-3.5 w-3.5 hover:text-[#C18D52]" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 bg-[#081B1B] border-[#5A8F76]/30 text-[#EEE8B2]">
+                              <span className="text-xs font-semibold px-2 py-1.5 text-[#5A8F76]">Export Options</span>
+                              <DropdownMenuSeparator className="bg-[#5A8F76]/20" />
+                              <DropdownMenuItem 
+                                onClick={() => downloadAsPDF(`msg-${msg.id}`, `AetherAI_Response_${new Date().toISOString().split('T')[0]}.pdf`)}
+                                className="text-sm cursor-pointer hover:bg-[#5A8F76]/20 focus:bg-[#5A8F76]/20"
+                              >
+                                <FileText className="mr-2 h-4 w-4 text-[#C18D52]" />
+                                Download as PDF
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => downloadAsText(msg.content, `AetherAI_Response_${new Date().toISOString().split('T')[0]}.txt`)}
+                                className="text-sm cursor-pointer hover:bg-[#5A8F76]/20 focus:bg-[#5A8F76]/20"
+                              >
+                                <FileCode className="mr-2 h-4 w-4 text-[#96CDB0]" />
+                                Download as TXT
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => downloadAsImage(`msg-${msg.id}`, `AetherAI_Image_${new Date().toISOString().split('T')[0]}.png`)}
+                                className="text-sm cursor-pointer hover:bg-[#5A8F76]/20 focus:bg-[#5A8F76]/20"
+                              >
+                                <Image className="mr-2 h-4 w-4 text-[#FFA586]" />
+                                Download as Image
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
                           <button onClick={() => handleFeedback(msg.id, "negative")} className={`p-1.5 rounded hover:bg-[#EEE8B2]/50 transition-all duration-200 ${msg.feedback === "negative" ? "text-[#C18D52]" : "text-[#5A8F76]"}`}>
                             <ThumbsDown className={`h-3.5 w-3.5 hover:text-[#C18D52] ${msg.feedback === "negative" ? "fill-[#C18D52]" : ""}`} />
                           </button>
@@ -600,7 +697,75 @@ const ChatPage = () => {
         {/* ── LEVEL 3C: Input bar ── */}
         <div className="flex-shrink-0 p-4 md:p-8 border-t border-[#C18D52]/20 z-10 w-full relative bg-[#EEE8B2]/50">
           <div className="max-w-3xl mx-auto relative group">
-            <div className={`relative flex items-center bg-white border border-[#5A8F76]/30 rounded-[24px] shadow-sm transition-all pl-4 pr-2 py-2 group-focus-within:border-[#C18D52] group-focus-within:ring-4 group-focus-within:ring-[#C18D52]/15 ${isStreaming ? '' : ''}`}>
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3 px-2">
+                <AnimatePresence>
+                  {selectedFiles.map(file => (
+                    <motion.div 
+                      key={file.id} 
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="relative flex items-center gap-2 bg-white/80 border border-[#5A8F76]/30 backdrop-blur-sm rounded-lg px-2 py-1.5 shadow-sm pr-8"
+                    >
+                      {file.type === 'image' ? (
+                        <img src={file.previewUrl} alt={file.file.name} className="h-8 w-8 object-cover rounded bg-[#081B1B]/10" />
+                      ) : (
+                        <div className="h-8 w-8 rounded bg-[#5A8F76]/10 flex items-center justify-center">
+                          {file.type === 'document' ? <FileText className="h-4 w-4 text-[#5A8F76]" /> : 
+                           file.type === 'code' ? <CodeIcon className="h-4 w-4 text-[#C18D52]" /> : 
+                           <FileText className="h-4 w-4 text-[#5A8F76]" />}
+                        </div>
+                      )}
+                      <div className="flex flex-col max-w-[120px]">
+                        <span className="text-xs font-semibold text-[#081B1B] truncate">{file.file.name}</span>
+                        <span className="text-[9px] text-[#5A8F76]">{(file.file.size / 1024).toFixed(1)} KB</span>
+                      </div>
+                      <button 
+                        onClick={() => removeFile(file.id)}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 hover:bg-black/5 rounded-full text-[#5A8F76] hover:text-[#B51A2B] transition-colors"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+            <div className={`relative flex items-center bg-white border border-[#5A8F76]/30 rounded-[24px] shadow-sm transition-all pl-2 pr-2 py-2 group-focus-within:border-[#C18D52] group-focus-within:ring-4 group-focus-within:ring-[#C18D52]/15 ${isStreaming ? '' : ''}`}>
+                
+                {/* Hidden File Input */}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileSelect} 
+                  multiple 
+                  className="hidden" 
+                  accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx,.json,.js,.ts,.py"
+                />
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="h-[42px] w-[42px] shrink-0 rounded-full flex items-center justify-center transition-all duration-200 text-[#5A8F76] hover:bg-[#5A8F76]/10 hover:text-[#C18D52]">
+                      <Paperclip className="h-5 w-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" sideOffset={12} className="w-56 bg-white border-[#5A8F76]/30 shadow-[0_8px_30px_rgb(0,0,0,0.12)] text-[#081B1B] rounded-xl p-2 z-[100]">
+                    <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="cursor-pointer font-medium py-2.5 rounded-lg hover:bg-[#5A8F76]/10 focus:bg-[#5A8F76]/10 mb-1">
+                      <HardDrive className="mr-3 h-4 w-4 text-[#5A8F76]" />
+                      Upload files
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer font-medium py-2.5 rounded-lg hover:bg-[#5A8F76]/10 focus:bg-[#5A8F76]/10 mb-1">
+                      <Image className="mr-3 h-4 w-4 text-[#C18D52]" />
+                      Photos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer font-medium py-2.5 rounded-lg hover:bg-[#5A8F76]/10 focus:bg-[#5A8F76]/10">
+                      <CodeIcon className="mr-3 h-4 w-4 text-[#96CDB0]" />
+                      Import code
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <input
                   ref={inputRef}
                   id="chat-input"

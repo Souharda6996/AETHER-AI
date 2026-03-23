@@ -6,7 +6,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message, messages } = req.body;
+  const { message, messages, images } = req.body;
   
   // 1. Try Anthropic first
   let apiKey = process.env.ANTHROPIC_API_KEY;
@@ -28,9 +28,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const history = Array.isArray(messages) && messages.length > 0
     ? messages.map((m: any) => ({
         role:    m.role === 'user' ? 'user' : 'assistant',
-        content: String(m.content ?? '')
+        content: m.content
       }))
     : [{ role: 'user', content: message }];
+
+  // If there are images and it's the latest message (which is at the end of history if we append it, 
+  // or we can just modify the very last 'user' message in history to include images)
+  const lastMsg = history[history.length - 1];
+  
+  if (provider === 'anthropic' && images && images.length > 0 && lastMsg.role === 'user') {
+    const contentBlocks: any[] = [];
+    
+    // Add images
+    for (const b64 of images) {
+       // b64 is data:image/jpeg;base64,...
+       const match = b64.match(/^data:(image\/[a-zA-Z]*);base64,([^\"]*)$/);
+       if (match) {
+           contentBlocks.push({
+               type: "image",
+               source: {
+                   type: "base64",
+                   media_type: match[1],
+                   data: match[2]
+               }
+           });
+       }
+    }
+    
+    // Add text
+    if (typeof lastMsg.content === 'string') {
+        contentBlocks.push({
+            type: "text",
+            text: lastMsg.content
+        });
+    }
+    
+    lastMsg.content = contentBlocks;
+  }
+  
+  if (provider === 'groq' && images && images.length > 0) {
+      console.warn("Groq does not support images yet. Only text will be processed.");
+  }
 
   try {
     let aiRes;
