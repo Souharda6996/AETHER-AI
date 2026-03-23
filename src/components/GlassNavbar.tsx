@@ -64,7 +64,7 @@ const GlassNavbar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Zap className="h-6 w-6 text-[#C18D52]" />
+            <img src="/aether-logo.png" alt="Aether AI" className="h-7 w-7 rounded-lg" />
             <span className="font-display text-xl text-[#C18D52]">AETHER</span>
           </motion.a>
         </div>
