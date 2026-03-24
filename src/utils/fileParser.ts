@@ -2,14 +2,9 @@ import mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist";
 import Papa from "papaparse";
 
-// Use the bundled worker via CDN with a fallback approach.
-// If the worker fails, PDF.js falls back to running without a worker (slower but reliable).
-try {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-} catch {
-  // If setting the worker fails, PDF.js will run without a worker (main thread).
-  console.warn("PDF.js worker setup failed, will run in main thread mode.");
-}
+// Use the LOCAL worker copy from public/ folder — no CDN dependency.
+// This file is copied from node_modules/pdfjs-dist/build/pdf.worker.min.mjs
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type;

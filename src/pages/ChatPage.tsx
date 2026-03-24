@@ -351,32 +351,37 @@ const ChatPage = () => {
       clearTimeout(timeoutId);
 
       if (res.status === 413) {
-        throw new Error('The uploaded file or message is too large for the processing engine (Max 50MB local / 4.5MB cloud). Please try a smaller file.');
+        throw new Error('The uploaded file is too large. Please try a smaller file.');
       }
       
       if (res.status === 404) throw new Error('API route not found. Please ensure the backend server is running.');
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Server error: ${res.status}`);
-      }
 
       const rawText = await res.text();
       let data: any;
       try {
         data = JSON.parse(rawText);
       } catch {
-        throw new Error(`Server returned invalid response (Status ${res.status}).`);
+        throw new Error('Server returned an invalid response. Please try again.');
       }
 
-      if (!res.ok) throw new Error(data?.error ?? data?.message ?? `Server error ${res.status}`);
+      // Check for error messages from the server (returned as HTTP 200 with error field)
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      // Check for non-OK status codes that weren't caught above
+      if (!res.ok) {
+        throw new Error(data?.message ?? `Server error ${res.status}`);
+      }
 
       const reply: string = data?.reply ?? data?.content ?? data?.message ?? data?.text ?? data?.response ?? '';
-      if (!reply.trim()) throw new Error('Received empty response from AI');
+      if (!reply.trim()) throw new Error('Received empty response from AI. Please try again.');
 
       setStreamingMessage(reply);
       setDisplayedStreamingMessage("");
       // NOTE: We do NOT set setIsStreaming(false) here. 
       // The Typewriter useEffect will do it when finished typing.
+
 
     } catch (err: any) {
       setIsStreaming(false); // Reset on error
