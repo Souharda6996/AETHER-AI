@@ -257,12 +257,17 @@ const ChatPage = () => {
       });
     }
 
-    const attachments = selectedFiles.map(f => ({
-      name: f.file.name,
-      type: f.file.type,
-      size: f.file.size,
-      previewUrl: f.type === 'image' ? f.previewUrl : undefined
-    }));
+    const attachments = selectedFiles.map(f => {
+      const att: Record<string, any> = {
+        name: f.file.name,
+        type: f.file.type,
+        size: f.file.size,
+      };
+      if (f.type === 'image' && f.previewUrl) {
+        att.previewUrl = f.previewUrl;
+      }
+      return att;
+    });
 
     const userMsg: Message = {
       id:        crypto.randomUUID(),
@@ -321,7 +326,7 @@ const ChatPage = () => {
         role: "user",
         content: trimmedInput,
         timestamp: serverTimestamp(),
-        attachments: attachments.length > 0 ? attachments : null
+        ...(attachments.length > 0 ? { attachments } : {})
       });
     }
 
