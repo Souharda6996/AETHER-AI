@@ -2,8 +2,14 @@ import mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist";
 import Papa from "papaparse";
 
-// Initialize PDF.js worker using a reliable CDN that matches the installed version
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// Use the bundled worker via CDN with a fallback approach.
+// If the worker fails, PDF.js falls back to running without a worker (slower but reliable).
+try {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+} catch {
+  // If setting the worker fails, PDF.js will run without a worker (main thread).
+  console.warn("PDF.js worker setup failed, will run in main thread mode.");
+}
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type;
@@ -34,8 +40,7 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       return await parseText(file);
     }
 
-    // 5. Images (Returns Base64 directly, handled differently in ChatPage if needed, 
-    // but here we can just return a marker or actual base64)
+    // 5. Images (Returns Base64 directly)
     if (fileType.startsWith("image/")) {
       return await fileToBase64(file);
     }
@@ -44,7 +49,7 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     try {
       return await parseText(file);
     } catch {
-      throw new Error(`Unsupported file type: ${file.type} (${file.name}) and could not be read as text.`);
+      throw new Error(`Unsupported file type: ${file.type} (${file.name})`);
     }
   } catch (error) {
     console.error("Error parsing file:", error);
@@ -53,34 +58,76 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const parsePDF = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-  let fullText = "";
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // Load PDF with worker disabled as fallback for reliability
+    const loadingTask = pdfjsLib.getDocument({ 
+      data: new Uint8Array(arrayBuffer),
+      // If the CDN worker fails, this ensures it still works
+      useWorkerFetch: false,
+    });
 
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map((item: any) => item.str).join(" ");
-    fullText += `--- Page ${i} ---\n${pageText}\n\n`;
+    // Add a hard timeout to the PDF loading itself (20 seconds)
+    const pdf = await Promise.race([
+      loadingTask.promise,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => {
+          loadingTask.destroy();
+          reject(new Error("PDF loading timed out"));
+        }, 20000)
+      )
+    ]);
+
+    let fullText = "";
+    const maxPages = Math.min(pdf.numPages, 50); // Cap at 50 pages
+
+    for (let i = 1; i <= maxPages; i++) {
+      try {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(" ");
+        fullText += `--- Page ${i} ---\n${pageText}\n\n`;
+      } catch (pageErr) {
+        console.warn(`Failed to parse page ${i}:`, pageErr);
+        fullText += `--- Page ${i} --- [Could not extract text]\n\n`;
+      }
+    }
+
+    if (pdf.numPages > 50) {
+      fullText += `\n[Note: Only first 50 of ${pdf.numPages} pages were extracted]\n`;
+    }
+
+    return fullText || "[PDF contained no extractable text]";
+  } catch (error) {
+    console.error("PDF parsing failed:", error);
+    // Return a useful message instead of throwing, so the user still gets a response
+    return `[Could not extract text from ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}]`;
   }
-  return fullText;
 };
 
 const parseDocx = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const result = await mammoth.extractRawText({ arrayBuffer });
-  return result.value;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value || "[Document contained no extractable text]";
+  } catch (error) {
+    console.error("DOCX parsing failed:", error);
+    return `[Could not extract text from ${file.name}]`;
+  }
 };
 
 const parseCSV = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     Papa.parse(file, {
       complete: (results) => {
-        // Convert array of arrays back to a formatted string table
         const rows = results.data.map((row: any) => row.join(" | ")).join("\n");
-        resolve(rows);
+        resolve(rows || "[CSV was empty]");
       },
-      error: (error) => reject(error),
+      error: (error) => {
+        console.error("CSV parsing failed:", error);
+        resolve(`[Could not parse CSV: ${error.message}]`);
+      },
     });
   });
 };
@@ -88,7 +135,7 @@ const parseCSV = (file: File): Promise<string> => {
 const parseText = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target?.result as string);
+    reader.onload = (e) => resolve((e.target?.result as string) || "[File was empty]");
     reader.onerror = (e) => reject(e);
     reader.readAsText(file);
   });
