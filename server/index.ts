@@ -129,21 +129,23 @@ app.post('/api/chat', async (req, res) => {
     const data: any = await aiRes.json()
     
     if (!aiRes.ok) {
-      console.error(`❌ ${provider} error:`, data?.error?.message || data?.error || 'Unknown error')
-      
-      // Enhanced Error Handling for Users
-      let friendlyError = 'An error occurred while processing your request. Please try again.';
       const rawError = (data?.error?.message || JSON.stringify(data?.error) || '').toLowerCase();
+      console.error(`❌ ${provider} error [${aiRes.status}]:`, rawError);
       
-      if (rawError.includes('decommissioned') || rawError.includes('not found') || rawError.includes('model_not_found')) {
-        friendlyError = 'The selected AI model is currently undergoing maintenance. Our engineers have been notified. Please try again in a few minutes.';
-      } else if (aiRes.status === 429) {
-        friendlyError = 'Too many requests. Please wait a moment and try again.';
-      } else if (rawError.includes('api key') || rawError.includes('authentication')) {
-        friendlyError = 'Authentication error. Please check your API configuration.';
+      // Translate technical errors into user-friendly messages
+      let friendlyError = "I'm having trouble connecting to my AI core right now. Please try again in a moment.";
+      
+      if (aiRes.status === 429) {
+        friendlyError = "I'm handling a lot of requests right now. Please wait a moment and try again.";
+      } else if (aiRes.status === 401 || rawError.includes('invalid api key') || rawError.includes('authentication')) {
+        friendlyError = "There's a configuration issue on my end. Please contact support.";
+      } else if (rawError.includes('context_length') || rawError.includes('too long')) {
+        friendlyError = "Your message or file is too large for me to process. Please try a shorter message or smaller file.";
+      } else if (rawError.includes('decommissioned') || rawError.includes('model_not_found') || rawError.includes('does not exist')) {
+        friendlyError = "I'm experiencing a temporary model issue. Please try again.";
       }
 
-      return res.status(aiRes.status).json({ error: friendlyError });
+      return res.status(200).json({ error: friendlyError });
     }
 
     let reply = ''
@@ -161,8 +163,8 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply })
 
   } catch (err: any) {
-    console.error('❌ Server error:', err)
-    res.status(500).json({ error: 'Internal Server Error. Please try again later.' })
+    console.error('❌ Server error:', err?.message || err)
+    res.status(200).json({ error: "I ran into an unexpected issue. Please try again." })
   }
 })
 
