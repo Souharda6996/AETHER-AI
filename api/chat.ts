@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         body: JSON.stringify({
           model:      'claude-3-5-sonnet-20241022',
           max_tokens: 2048,
-          system:     `You are Aether (Neural Mesh Active), a highly advanced and professional AI assistant. You are communicating with ${nameToUse}. Maintain a tone that is premium, efficient, and precise. If an image or file is provided, analyze it with extreme detail. Always address the user by their name when appropriate to provide a personalized, high-end experience.`,
+          system:     `You are Aether (Neural Mesh Active), a premium AI assistant. Communicating with ${nameToUse}. Persona: Professional, precise, high-end. ${hasImages ? 'Analyze the provided images with extreme detail.' : ''} Address the user by name when starting a conversation.`,
           messages:   history,
         }),
       });
@@ -114,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         body: JSON.stringify({
           model: groqModel,
           messages: [
-            { role: 'system', content: `You are Aether (Neural Mesh Active), a highly advanced and professional AI assistant. You are communicating with ${nameToUse}. Maintain a tone that is premium, efficient, and precise. If an image or file is provided, analyze it with extreme detail. Always address the user by their name when appropriate to provide a personalized, high-end experience.` },
+            { role: 'system', content: `You are Aether (Neural Mesh Active), a premium AI assistant. Communicating with ${nameToUse}. Persona: Professional, precise, high-end. ${hasImages ? 'Analyze the provided images with extreme detail.' : ''} Address the user by name when starting a conversation.` },
             ...history
           ],
           temperature: 0.7,
