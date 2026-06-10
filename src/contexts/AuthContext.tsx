@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { 
   User, 
   onAuthStateChanged, 
-  signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut,
@@ -42,19 +43,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
-  const loginWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider);
-    const additionalInfo = getAdditionalUserInfo(result);
-    console.log("🔐 Google login — isNewUser:", additionalInfo?.isNewUser, "email:", result.user?.email);
+  // Handle the redirect result after Google sign-in
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (!result) return;
+        const additionalInfo = getAdditionalUserInfo(result);
+        console.log("🔐 Google redirect login — isNewUser:", additionalInfo?.isNewUser, "email:", result.user?.email);
 
-    // Send welcome email only for first-time Google sign-ins
-    if (additionalInfo?.isNewUser && result.user) {
-      console.log("📧 Triggering welcome email for new user:", result.user.email);
-      sendWelcomeEmail(
-        result.user.displayName || "Explorer",
-        result.user.email || ""
-      );
-    }
+        // Send welcome email only for first-time Google sign-ins
+        if (additionalInfo?.isNewUser && result.user) {
+          console.log("📧 Triggering welcome email for new user:", result.user.email);
+          sendWelcomeEmail(
+            result.user.displayName || "Explorer",
+            result.user.email || ""
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("Google redirect error:", err);
+      });
+  }, []);
+
+  const loginWithGoogle = async () => {
+    await signInWithRedirect(auth, googleProvider);
   };
 
   const loginWithEmail = async (email: string, pass: string) => {

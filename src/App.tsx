@@ -1,20 +1,25 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import ChatPage from "./pages/ChatPage.tsx";
-import LoginPage from "./pages/LoginPage.tsx";
-import NotFound from "./pages/NotFound.tsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { AetherLoader } from "./components/AetherLoader";
+import { ScrollToTop } from "./components/ScrollToTop";
+import { queryClient } from "./lib/queryClient";
 
-const queryClient = new QueryClient();
+// Lazy-load every page — each becomes its own JS chunk loaded on demand.
+// This means the initial bundle only includes React, the router, and the
+// providers — NOT the heavy ChatPage or landing page component tree.
+const Index = lazy(() => import("./pages/Index"));
+const ChatPage = lazy(() => import("./pages/ChatPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
-  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-[#050508]"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div></div>;
+  if (loading) return <AetherLoader />;
   if (!currentUser) return <Navigate to="/login" replace />;
   return children;
 };
@@ -26,13 +31,25 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          {/* Reset scroll position on every route change */}
+          <ScrollToTop />
+          {/* Suspense boundary: shows AetherLoader while any lazy page chunk loads */}
+          <Suspense fallback={<AetherLoader />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <ChatPage />
+                  </ProtectedRoute>
+                }
+              />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

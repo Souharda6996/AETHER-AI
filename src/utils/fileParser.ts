@@ -1,10 +1,8 @@
-import mammoth from "mammoth";
-import * as pdfjsLib from "pdfjs-dist";
-import Papa from "papaparse";
-
-// Use the LOCAL worker copy from public/ folder — no CDN dependency.
-// This file is copied from node_modules/pdfjs-dist/build/pdf.worker.min.mjs
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+/**
+ * fileParser.ts — All heavy parsing libs (mammoth, pdfjs-dist, papaparse) are
+ * dynamically imported only when the relevant file type is actually processed.
+ * This keeps ~1.5MB of parsing libraries out of the initial bundle.
+ */
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type;
@@ -15,9 +13,13 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     if (fileType === "application/pdf" || fileName.endsWith(".pdf")) {
       return await parsePDF(file);
     }
-    
+
     // 2. DOCX Files
-    if (fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || fileName.endsWith(".docx")) {
+    if (
+      fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      fileName.endsWith(".docx")
+    ) {
       return await parseDocx(file);
     }
 
@@ -28,7 +30,7 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 
     // 4. Plain Text / Code / JSON / HTML / Markdown
     if (
-      fileType.startsWith("text/") || 
+      fileType.startsWith("text/") ||
       fileType === "application/json" ||
       fileName.match(/\.(txt|md|js|ts|py|html|css|json|yaml|xml)$/)
     ) {
@@ -40,7 +42,7 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       return await fileToBase64(file);
     }
 
-    // 6. Fallback - Try to read as plain text
+    // 6. Fallback — try to read as plain text
     try {
       return await parseText(file);
     } catch {
@@ -48,30 +50,36 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     }
   } catch (error) {
     console.error("Error parsing file:", error);
-    throw new Error(`Failed to read ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to read ${file.name}: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 };
 
 const parsePDF = async (file: File): Promise<string> => {
   try {
+    // Dynamic import — pdfjs-dist is ~1MB; only load when a PDF is uploaded
+    const pdfjsLib = await import("pdfjs-dist");
+
+    // Use the LOCAL worker copy from public/ — no CDN dependency
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
     const arrayBuffer = await file.arrayBuffer();
-    
-    // Load PDF with worker disabled as fallback for reliability
-    const loadingTask = pdfjsLib.getDocument({ 
+
+    const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
-      // If the CDN worker fails, this ensures it still works
       useWorkerFetch: false,
     });
 
-    // Add a hard timeout to the PDF loading itself (20 seconds)
+    // Hard timeout on PDF loading (20 seconds)
     const pdf = await Promise.race([
       loadingTask.promise,
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => {
           loadingTask.destroy();
           reject(new Error("PDF loading timed out"));
         }, 20000)
-      )
+      ),
     ]);
 
     let fullText = "";
@@ -81,7 +89,9 @@ const parsePDF = async (file: File): Promise<string> => {
       try {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(" ");
+        const pageText = textContent.items
+          .map((item: { str?: string }) => item.str ?? "")
+          .join(" ");
         fullText += `--- Page ${i} ---\n${pageText}\n\n`;
       } catch (pageErr) {
         console.warn(`Failed to parse page ${i}:`, pageErr);
@@ -96,13 +106,14 @@ const parsePDF = async (file: File): Promise<string> => {
     return fullText || "[PDF contained no extractable text]";
   } catch (error) {
     console.error("PDF parsing failed:", error);
-    // Return a useful message instead of throwing, so the user still gets a response
-    return `[Could not extract text from ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}]`;
+    return `[Could not extract text from ${file.name}: ${error instanceof Error ? error.message : "Unknown error"}]`;
   }
 };
 
 const parseDocx = async (file: File): Promise<string> => {
   try {
+    // Dynamic import — mammoth is ~300KB; only load when a .docx is uploaded
+    const mammoth = await import("mammoth");
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer });
     return result.value || "[Document contained no extractable text]";
@@ -113,13 +124,15 @@ const parseDocx = async (file: File): Promise<string> => {
 };
 
 const parseCSV = (file: File): Promise<string> => {
-  return new Promise((resolve) => {
+  // Dynamic import — papaparse is ~45KB; only load when a .csv is uploaded
+  return new Promise(async (resolve) => {
+    const Papa = (await import("papaparse")).default;
     Papa.parse(file, {
-      complete: (results) => {
-        const rows = results.data.map((row: any) => row.join(" | ")).join("\n");
+      complete: (results: { data: string[][] }) => {
+        const rows = results.data.map((row) => row.join(" | ")).join("\n");
         resolve(rows || "[CSV was empty]");
       },
-      error: (error) => {
+      error: (error: { message: string }) => {
         console.error("CSV parsing failed:", error);
         resolve(`[Could not parse CSV: ${error.message}]`);
       },

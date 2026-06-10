@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -95,7 +95,7 @@ const ChatPage = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files).map(file => {
         let type: UploadedFile['type'] = 'other';
@@ -115,15 +115,15 @@ const ChatPage = () => {
       setSelectedFiles(prev => [...prev, ...newFiles]);
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  }, []);
 
-  const removeFile = (id: string) => {
+  const removeFile = useCallback((id: string) => {
     setSelectedFiles(prev => {
       const file = prev.find(f => f.id === id);
       if (file?.previewUrl) URL.revokeObjectURL(file.previewUrl);
       return prev.filter(f => f.id !== id);
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -222,7 +222,7 @@ const ChatPage = () => {
     }
   }, [streamingMessage, displayedStreamingMessage, isStreaming, currentUser, activeConversationId]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     if (abortController) {
       abortController.abort();
       setAbortController(null);
@@ -231,11 +231,11 @@ const ChatPage = () => {
     setDisplayedStreamingMessage("");
     setIsStreaming(false);
     setIsPaused(false);
-  };
+  }, [abortController]);
 
-  const togglePause = () => {
+  const togglePause = useCallback(() => {
     setIsPaused(prev => !prev);
-  };
+  }, []);
 
   const sendMessage = async (inputText: string) => {
     const trimmedInput = inputText.trim();
@@ -435,13 +435,13 @@ const ChatPage = () => {
     });
   };
 
-  const handleCopy = (id: string, text: string) => {
+  const handleCopy = useCallback((id: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-  };
+  }, []);
 
-  const resetChat = () => {
+  const resetChat = useCallback(() => {
     setActiveConversationId(null);
     setMessages([{
       id: "initial-1",
@@ -450,7 +450,7 @@ const ChatPage = () => {
       timestamp: new Date(),
     }]);
     setInput("");
-  };
+  }, []);
 
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-[#081B1B] text-[#EEE8B2] font-sans">
