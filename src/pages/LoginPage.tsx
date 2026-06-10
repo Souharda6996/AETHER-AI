@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Zap, Loader2, ArrowLeft } from "lucide-react";
@@ -8,17 +8,27 @@ import { motion } from "framer-motion";
 
 const LoginPage = () => {
   const [loadingAction, setLoadingAction] = useState(false);
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Navigate to /chat as soon as Firebase confirms the user is authenticated.
+  // This avoids the race condition where navigate("/chat") fires before
+  // onAuthStateChanged has updated currentUser, causing ProtectedRoute to
+  // bounce the user back to /login.
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/chat", { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   const handleGoogleAuth = async () => {
     setLoadingAction(true);
     try {
       await loginWithGoogle();
-      navigate("/chat");
+      // Do NOT navigate here — the useEffect above handles it once
+      // onAuthStateChanged fires and currentUser is set.
     } catch (error: any) {
       toast.error(error.message || "Failed to authenticate with Google.");
-    } finally {
       setLoadingAction(false);
     }
   };
