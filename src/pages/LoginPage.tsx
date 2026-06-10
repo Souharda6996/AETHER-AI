@@ -11,15 +11,8 @@ const LoginPage = () => {
   const { loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
 
-  // Navigate to /chat as soon as Firebase confirms the user is authenticated.
-  // This avoids the race condition where navigate("/chat") fires before
-  // onAuthStateChanged has updated currentUser, causing ProtectedRoute to
-  // bounce the user back to /login.
-  useEffect(() => {
-    if (currentUser) {
-      navigate("/chat", { replace: true });
-    }
-  }, [currentUser, navigate]);
+  // Navigation is handled automatically by PublicOnlyRoute and ProtectedRoute.
+  // DO NOT call navigate() manually here.
 
   const handleGoogleAuth = () => {
     setLoadingAction(true);

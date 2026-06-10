@@ -1,6 +1,11 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import type { FirebaseApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider,
+  browserLocalPersistence,
+  setPersistence
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -12,13 +17,18 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "FIREBASE_APP_ID",
 };
 
-// Singleton guard — prevents "Firebase App named '[DEFAULT]' already exists"
-// error and the memory leak that comes with duplicate initialisation.
-// This is especially important in Vite's HMR environment during development.
-const firebaseApp: FirebaseApp =
+// Singleton guard — prevents duplicate initialization in Vite HMR
+export const app: FirebaseApp =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+// ─── Persistence: survive page refresh ────────────────────────────────────────
+// WITHOUT this, user is logged out on every page refresh
+setPersistence(auth, browserLocalPersistence).catch(console.error);
+
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope("email");
+googleProvider.addScope("profile");
 googleProvider.setCustomParameters({ prompt: "select_account" });
