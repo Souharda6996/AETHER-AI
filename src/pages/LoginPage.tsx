@@ -21,17 +21,19 @@ const LoginPage = () => {
     }
   }, [currentUser, navigate]);
 
-  const handleGoogleAuth = async () => {
-    // DO NOT set loading state before calling loginWithGoogle!
-    // React state updates defer execution, which causes strict browsers
-    // (Safari, mobile webviews) to lose the "synchronous user gesture"
-    // context, resulting in the popup failing or being blocked silently.
-    try {
-      await loginWithGoogle();
-      // If successful, the useEffect above will navigate to /chat
-    } catch (error: any) {
-      toast.error(error.message || "Failed to authenticate with Google.");
-    }
+  const handleGoogleAuth = () => {
+    setLoadingAction(true);
+
+    // signInWithGoogle calls signInWithPopup synchronously on entry
+    // The setLoadingAction above is synchronous — does NOT break trusted context
+    loginWithGoogle()
+      .catch((err) => {
+        console.error("Login failed:", err);
+        toast.error(err.message || "Sign-in failed. Please try again.");
+      })
+      .finally(() => {
+        setLoadingAction(false);
+      });
   };
 
   return (

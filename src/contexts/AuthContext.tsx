@@ -43,6 +43,12 @@ const handleNewUserWelcome = (result: Awaited<ReturnType<typeof signInWithPopup>
   }
 };
 
+function isMobileBrowser(): boolean {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,16 +61,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (!result) return;
+        console.log("🔐 Google redirect login success:", result.user?.displayName);
+        handleNewUserWelcome(result);
+      })
+      .catch((err) => {
+        if (err?.code !== "auth/missing-initial-state") {
+          console.error("Google redirect error:", err);
+        }
+      });
+  }, []);
+
   const loginWithGoogle = async () => {
+    if (isMobileBrowser()) {
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       handleNewUserWelcome(result);
     } catch (err: any) {
-      if (err?.code === "auth/popup-closed-by-user") {
-        // User closed it manually, not an error
-        return;
+      if (
+        err?.code === "auth/popup-blocked" ||
+        err?.code === "auth/popup-closed-by-user" ||
+        err?.code === "auth/cancelled-popup-request"
+      ) {
+        console.warn("Popup blocked — falling back to redirect flow");
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        throw err;
       }
-      throw err;
     }
   };
 
