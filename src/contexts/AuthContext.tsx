@@ -55,43 +55,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
-  // Handle the result when returning from signInWithRedirect fallback.
-  // This only runs if signInWithPopup was blocked and we fell back to redirect.
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (!result) return;
-        console.log("🔐 Google redirect login — email:", result.user?.email);
-        handleNewUserWelcome(result);
-      })
-      .catch((err) => {
-        // "missing-initial-state" means sessionStorage was cleared — safe to ignore,
-        // the user just needs to try signing in again.
-        if (err?.code !== "auth/missing-initial-state") {
-          console.error("Google redirect error:", err);
-        }
-      });
-  }, []);
-
   const loginWithGoogle = async () => {
     try {
-      // Popup is the preferred method: instant, no sessionStorage dependency,
-      // no page reload. Works in the vast majority of browsers.
       const result = await signInWithPopup(auth, googleProvider);
       handleNewUserWelcome(result);
     } catch (err: any) {
-      if (err?.code === "auth/popup-blocked") {
-        // Browser explicitly blocked the popup (e.g. no user gesture, strict settings).
-        // Fall back to redirect — the page will navigate away and come back.
-        // getRedirectResult() in the useEffect above will handle the result.
-        console.warn("Popup blocked — falling back to redirect flow.");
-        await signInWithRedirect(auth, googleProvider);
-      } else if (err?.code === "auth/popup-closed-by-user") {
-        // User dismissed the popup — not an error, just do nothing.
+      if (err?.code === "auth/popup-closed-by-user") {
+        // User closed it manually, not an error
         return;
-      } else {
-        throw err;
       }
+      throw err;
     }
   };
 

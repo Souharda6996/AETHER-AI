@@ -22,14 +22,15 @@ const LoginPage = () => {
   }, [currentUser, navigate]);
 
   const handleGoogleAuth = async () => {
-    setLoadingAction(true);
+    // DO NOT set loading state before calling loginWithGoogle!
+    // React state updates defer execution, which causes strict browsers
+    // (Safari, mobile webviews) to lose the "synchronous user gesture"
+    // context, resulting in the popup failing or being blocked silently.
     try {
       await loginWithGoogle();
-      // Do NOT navigate here — the useEffect above handles it once
-      // onAuthStateChanged fires and currentUser is set.
+      // If successful, the useEffect above will navigate to /chat
     } catch (error: any) {
       toast.error(error.message || "Failed to authenticate with Google.");
-      setLoadingAction(false);
     }
   };
 
